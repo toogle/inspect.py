@@ -1,0 +1,7 @@
+.*
+!.gitignore
+
+*.py[cod]
+__pycache__
+
+pip-log.txt
