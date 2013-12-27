@@ -72,8 +72,18 @@ def get_doctype(doctype):
     return 'unknown'
 
 
-def get_basename(link):
-    return urlparse(link).path.split('/')[-1]
+def is_absolute(url):
+    return urlparse(url).netloc != ''
+
+
+def is_same_domain(url1, url2):
+    return urlparse(url1).netloc == urlparse(url2).netloc
+
+
+def pretify_url(url):
+    parts = urlparse(url)
+
+    return parts.netloc + parts.path
 
 
 # Regular expression to match against version.  {{{
@@ -89,7 +99,9 @@ def guess_version(link, base_url):
     if match is not None:
         return match.group()
 
-    url = link if re.match(r'^https?://', link) else urljoin(base_url, link)
+    url = link if is_absolute(link) else urljoin(base_url, link)
+    if not url.startswith('http'):  # schema-less URL
+        url = urlparse(base_url).scheme + ':' + url
 
     # Try to find version in the script itself.
     res = request(url)
@@ -174,10 +186,17 @@ def inspect(url, output, verbose=False):
     print('-------------', file=output)
     sheets = soup.find_all('link', rel='stylesheet', href=True)
     for i, sheet in enumerate(sheets, 1):
-        basename = get_basename(sheet['href'])
-        version = guess_version(sheet['href'], res.url)
+        link = sheet['href']
+        if is_absolute(link) and not is_same_domain(link, res.url):
+            name = pretify_url(link)
+        else:
+            name = urlparse(link).path
+            if not name.startswith('/'):  # works well even if name is empty
+                name = '/' + name
 
-        print('{}. {} (version {})'.format(i, basename, version), file=output)
+        version = guess_version(link, res.url)
+
+        print('{}. {} (version {})'.format(i, name, version), file=output)
         if verbose:
             if sheet.string:
                 sheet.string.replace_with('...')  # omit style sheet contents
@@ -191,10 +210,17 @@ def inspect(url, output, verbose=False):
     print('--------', file=output)
     scripts = soup.find_all('script', src=True)
     for i, script in enumerate(scripts, 1):
-        basename = get_basename(script['src'])
-        version = guess_version(script['src'], res.url)
+        link = script['src']
+        if is_absolute(link) and not is_same_domain(link, res.url):
+            name = pretify_url(link)
+        else:
+            name = urlparse(link).path
+            if not name.startswith('/'):  # works well even if name is empty
+                name = '/' + name
 
-        print('{}. {} (version {})'.format(i, basename, version), file=output)
+        version = guess_version(link, res.url)
+
+        print('{}. {} (version {})'.format(i, name, version), file=output)
         if verbose:
             if script.string:
                 script.string.replace_with('...')  # omit script contents
