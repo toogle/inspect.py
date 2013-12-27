@@ -43,7 +43,7 @@ def request(url, *args, **kwargs):
     except requests.exceptions.Timeout:
         print('timeout!', file=sys.stderr)
     else:
-        for r in list(res.history) + [res]:
+        for i, r in enumerate(list(res.history) + [res], 1):
             code = r.status_code
             reason = r.reason
             elapsed = r.elapsed.total_seconds()
@@ -51,7 +51,7 @@ def request(url, *args, **kwargs):
 
             if 'location' in r.headers:
                 location = r.headers['location']
-                print('>> GET {}... '.format(location), end='', file=sys.stderr)
+                print('{} GET {}... '.format('>' * i, location), end='', file=sys.stderr)
 
         if res.ok:
             return res
