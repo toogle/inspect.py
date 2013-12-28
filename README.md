@@ -12,8 +12,8 @@ Example
 -------
 
     $ python inspect.py http://2gle.me
-    GET http://2gle.me... 301 Moved Permanently [0.108643 sec]
-    >> GET http://www.2gle.me/... 200 OK [0.224851 sec]
+    GET http://2gle.me... 301 Moved Permanently [0.106582 sec]
+    > GET http://www.2gle.me/... 200 OK [0.259101 sec]
 
     http://www.2gle.me/
     ===================
@@ -26,27 +26,17 @@ Example
 
     Cookies:
     --------
-	Nope
+    Nope
 
     Style sheets:
     -------------
-    1. bootstrap.no-icons.min.css (version 2.3.1)
-    2. font-awesome.min.css (version 3.2.1)
+    1. netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap.no-icons.min.css (version 2.3.1)
+    2. netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css (version 3.2.1)
 
     Scripts:
     --------
-    1. jquery.min.js (version 1.10.2)
-    2. bootstrap.min.js (version 2.3.1)
-
-Todo
-----
-
-* HTTP authentication (Basic and Digest)
-* Custom Cookies
-* Custom User-Agent header
-* HTTP proxy support
-
-PRs are welcome! :)
+    1. ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js (version 1.10.2)
+    2. netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js (version 2.3.1)
 
 License
 -------
