@@ -31,6 +31,7 @@ except ImportError:
     from io import StringIO
 
 import requests
+from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 import bs4
 
 
@@ -93,7 +94,7 @@ _VERSION_RE = re.compile(r'''
 ''', re.VERBOSE)
 # }}}
 
-def guess_version(link, base_url):
+def guess_version(link, base_url, **kwargs):
     # Try to find version in the link.
     match = _VERSION_RE.search(link)
     if match is not None:
@@ -104,7 +105,7 @@ def guess_version(link, base_url):
         url = urlparse(base_url).scheme + ':' + url
 
     # Try to find version in the script itself.
-    res = request(url)
+    res = request(url, **kwargs)
     if res is not None:
         for i, line in enumerate(res.iter_lines()):
             if i > 20:  # look only at the beginning
@@ -120,9 +121,9 @@ def guess_version(link, base_url):
     return 'unknown'
 
 
-def inspect(url, output, verbose=False):
+def inspect(url, output, verbose=False, **kwargs):
     # Try to get the document.
-    res = request(url)
+    res = request(url, **kwargs)
     if res is None:
         return
 
@@ -194,7 +195,7 @@ def inspect(url, output, verbose=False):
             if not name.startswith('/'):  # works well even if name is empty
                 name = '/' + name
 
-        version = guess_version(link, res.url)
+        version = guess_version(link, res.url, **kwargs)
 
         print('{}. {} (version {})'.format(i, name, version), file=output)
         if verbose:
@@ -218,7 +219,7 @@ def inspect(url, output, verbose=False):
             if not name.startswith('/'):  # works well even if name is empty
                 name = '/' + name
 
-        version = guess_version(link, res.url)
+        version = guess_version(link, res.url, **kwargs)
 
         print('{}. {} (version {})'.format(i, name, version), file=output)
         if verbose:
@@ -227,8 +228,6 @@ def inspect(url, output, verbose=False):
             print('  ', script, file=output)
     if not scripts:
         print('Nope', file=output)
-
-    return
 
 
 def main():
@@ -239,17 +238,17 @@ def main():
             action='store_true', help='be more verbose')
     parser.add_argument('-o', '--output',
             help='write report to the file')
-    #parser.add_argument('-a', '--auth',
-    #        help='HTTP authentication credentials (username:password)')
-    #parser.add_argument('-D', '--digest',
-    #        action='store_true', help='use HTTP Digest authentication')
-    #parser.add_argument('-c', '--cookie',
-    #        action='append', dest='cookies',
-    #        help='send custom Cookie (can be used several times)')
-    #parser.add_argument('-u', '--user-agent',
-    #        help='set User-Agent HTTP header')
-    #parser.add_argument('-p', '--proxy',
-    #        help='use HTTP proxy (http://[username[:password]@]host[:port])')
+    parser.add_argument('-a', '--auth',
+            help='HTTP authentication credentials (username:password)')
+    parser.add_argument('-D', '--digest',
+            action='store_true', help='use HTTP Digest authentication')
+    parser.add_argument('-c', '--cookie',
+            action='append', dest='cookies',
+            help='send custom Cookie (can be used several times)')
+    parser.add_argument('-u', '--user-agent',
+            help='set User-Agent HTTP header')
+    parser.add_argument('-p', '--proxy',
+            help='use HTTP proxy (http://[username[:password]@]host[:port])')
     parser.add_argument('url',
             metavar='URL', help='URL to inspect')
     args = parser.parse_args()
@@ -258,13 +257,47 @@ def main():
     output = (StringIO() if args.output is None else
               open(args.output, 'w'))
 
-    inspect(args.url, output, args.verbose)
+    # Authentication.
+    if args.auth is not None:
+        username, password = args.auth.split(':', 1)
+        auth = (HTTPDigestAuth(username, password) if args.digest else
+                HTTPBasicAuth(username, password))
+    else:
+        auth = None
+
+    # Cookies.
+    if args.cookies is not None:
+        cookies = dict(c.split('=', 1) for c in args.cookies)
+    else:
+        cookies = {}
+
+    # User-Agent HTTP header.
+    if args.user_agent is not None:
+        headers = {
+            'user-agent': args.user_agent
+        }
+    else:
+        headers = {}
+
+    # HTTP(S) proxies.
+    if args.proxy is not None:
+        proxies = {
+            'http': args.proxy,
+            'https': args.proxy
+        }
+    else:
+        proxies = {}
+
+    inspect(args.url, output, args.verbose,
+            auth=auth, cookies=cookies, headers=headers, proxies=proxies)
 
     if isinstance(output, StringIO):
         print()
         print(output.getvalue(), end='')
 
     output.close()
+
+    return 0
 
 if __name__ == '__main__':
     sys.exit(main())
