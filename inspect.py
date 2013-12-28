@@ -233,7 +233,7 @@ def inspect(url, output, verbose=False, **kwargs):
 def main():
     parser = ArgumentParser()
     parser.add_argument('-V', '--version',
-            action='version', version='%(prog)s v0.01')
+            action='version', version='%(prog)s v0.1')
     parser.add_argument('-v', '--verbose',
             action='store_true', help='be more verbose')
     parser.add_argument('-o', '--output',
