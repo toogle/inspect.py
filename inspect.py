@@ -239,6 +239,22 @@ def inspect(url, output, verbose=False, **kwargs):
         print('Nope', file=output)
 
 
+# Browsers User-Agent strings.  {{{
+_USER_AGENTS = {
+    # Desktop
+    'chrome': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36',
+    'firefox': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0',
+    'msie': 'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)',
+    'opera': 'Opera/9.80 (Windows NT 6.1) Presto/2.12.388 Version/12.16',
+    'safari': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/533.20.25 (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27',
+
+    # Mobile
+    'android': 'Mozilla/5.0 (Linux; U; Android 4.0.3; en-us) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30',
+    'ipad': 'Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25',
+    'iphone': 'Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_3_1 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8G4 Safari/6533.18.5'
+}
+# }}}
+
 def main():
     parser = ArgumentParser()
     parser.add_argument('-V', '--version',
@@ -283,7 +299,7 @@ def main():
     # User-Agent HTTP header.
     if args.user_agent is not None:
         headers = {
-            'user-agent': args.user_agent
+            'user-agent': _USER_AGENTS.get(args.user_agent, args.user_agent)
         }
     else:
         headers = {}
