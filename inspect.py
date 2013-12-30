@@ -87,6 +87,13 @@ def pretify_url(url):
     return parts.netloc + parts.path
 
 
+def highlight_basename(url):
+    parts = url.split('/')
+    parts[-1] = '\033[1m' + parts[-1] + '\033[0m'
+
+    return '/'.join(parts)
+
+
 # Regular expression to match against version.  {{{
 _VERSION_RE = re.compile(r'''
     (\d+\.)?(\d+\.)(\d+) |                   # x.y.z or x.y
@@ -195,6 +202,7 @@ def inspect(url, output, verbose=False, **kwargs):
             if not name.startswith('/'):  # works well even if name is empty
                 name = '/' + name
 
+        name = highlight_basename(name)
         version = guess_version(link, res.url, **kwargs)
 
         print('{}. {} (version {})'.format(i, name, version), file=output)
@@ -219,6 +227,7 @@ def inspect(url, output, verbose=False, **kwargs):
             if not name.startswith('/'):  # works well even if name is empty
                 name = '/' + name
 
+        name = highlight_basename(name)
         version = guess_version(link, res.url, **kwargs)
 
         print('{}. {} (version {})'.format(i, name, version), file=output)
