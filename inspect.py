@@ -18,6 +18,7 @@ from __future__ import print_function
 
 import sys
 import re
+from datetime import timedelta
 from argparse import ArgumentParser
 
 try:
@@ -152,6 +153,15 @@ def inspect(url, output, verbose=False, **kwargs):
     # 'X-Powered-By' HTTP header.
     if 'x-powered-by' in res.headers:
         print('* X-Powered-By:', res.headers['x-powered-by'], file=output)
+
+    # 'Strict-Transport-Security' HTTP header.
+    if 'strict-transport-security' in res.headers:
+        hsts = res.headers['strict-transport-security']
+        match = re.search(r'max-age=(\d+)', hsts)
+        if match is not None:
+            max_age_seconds = int(match.group(1))
+            max_age = timedelta(seconds=max_age_seconds)
+            print('* Strict-Transport-Security: max-age={} ({} days)'.format(max_age_seconds, max_age.days), file=output)
 
     # 'Content-Type' HTTP header.
     if 'content-type' in res.headers:
